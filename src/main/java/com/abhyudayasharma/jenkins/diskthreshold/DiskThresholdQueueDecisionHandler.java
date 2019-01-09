@@ -2,10 +2,13 @@ package com.abhyudayasharma.jenkins.diskthreshold;
 
 import hudson.Extension;
 import hudson.model.Action;
-import hudson.model.BuildableItemWithBuildWrappers;
+import hudson.model.Job;
+import hudson.model.JobProperty;
+import hudson.model.Project;
 import hudson.model.Queue;
 import jenkins.model.Jenkins;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,20 +19,22 @@ public class DiskThresholdQueueDecisionHandler extends Queue.QueueDecisionHandle
 
     @Override
     public boolean shouldSchedule(Queue.Task p, List<Action> actions) {
-        Jenkins jenkins = Jenkins.getInstance();
-        long freeSpace = jenkins.getRootDir().getUsableSpace();
-        BuildableItemWithBuildWrappers wrappers;
-        if (p instanceof BuildableItemWithBuildWrappers) {
-            wrappers = (BuildableItemWithBuildWrappers) p;
-            for (Object o :
-                    wrappers.getBuildWrappersList()) {
-                if (o instanceof DiskThresholdBuildWrapper) {
-                    DiskThresholdBuildWrapper buildWrapper = (DiskThresholdBuildWrapper) o;
-                    long thresholdBytes = buildWrapper.getThresholdMegaBytes() * 1024 * 1024; // convert to bytes from MB
-                    if (freeSpace < thresholdBytes) {
-                        LOGGER.log(Level.SEVERE, "Not adding task to Queue due to limited disk space." +
-                                "\nCurrent disk space: " + freeSpace);
-                        return false;
+        if (p instanceof Project) {
+            Project project = (Project) p;
+            Collection jobs = project.getAllJobs();
+            for (Object o : jobs) {
+                if (o instanceof Job) {
+                    Job job = (Job) o;
+                    JobProperty prop = job.getProperty(DiskThresholdJobProperty.class);
+                    if (prop instanceof DiskThresholdJobProperty) { // instanceof checks for null
+                        long usableSpace = Jenkins.getInstance().getRootDir().getUsableSpace();
+                        DiskThresholdJobProperty property = (DiskThresholdJobProperty) prop;
+                        long thresholdBytes = property.getThresholdMegaBytes() * 1024 * 1024; // convert to bytes from MBs
+                        if (usableSpace < thresholdBytes) {
+                            LOGGER.log(Level.SEVERE, "Not adding task to Queue due to limited disk space. " +
+                                    "Current free disk space: " + usableSpace);
+                            return false;
+                        }
                     }
                 }
             }

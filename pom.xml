@@ -104,8 +104,8 @@
     </repositories>
     <pluginRepositories>
         <pluginRepository>
-            <id>disk-threshold-plugin</id>
-            <url>https://github.com/AbhyudayaSharma/disk-threshold-plugin</url>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
 </project>

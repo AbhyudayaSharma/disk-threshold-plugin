@@ -1,13 +1,8 @@
 package com.abhyudayasharma.jenkins.diskthreshold;
 
 import hudson.Extension;
-import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
-import hudson.tasks.BuildWrapper;
-import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.FormValidation;
+import jenkins.model.OptionalJobProperty;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -15,7 +10,7 @@ import org.kohsuke.stapler.QueryParameter;
 import javax.annotation.Nonnull;
 
 @SuppressWarnings("unused")
-public final class DiskThresholdBuildWrapper extends BuildWrapper {
+public final class DiskThresholdJobProperty extends OptionalJobProperty {
 
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
@@ -23,7 +18,7 @@ public final class DiskThresholdBuildWrapper extends BuildWrapper {
     private long thresholdMegaBytes;
 
     @DataBoundConstructor
-    public DiskThresholdBuildWrapper(long thresholdMegaBytes) {
+    public DiskThresholdJobProperty(long thresholdMegaBytes) {
         this.thresholdMegaBytes = thresholdMegaBytes;
     }
 
@@ -47,17 +42,7 @@ public final class DiskThresholdBuildWrapper extends BuildWrapper {
         this.thresholdMegaBytes = thresholdMegaBytes;
     }
 
-    @Override
-    public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) {
-        return new Environment() {
-        };
-    }
-
-    public static final class DescriptorImpl extends BuildWrapperDescriptor {
-        @Override
-        public boolean isApplicable(AbstractProject<?, ?> item) {
-            return true; // should be applicable on all projects
-        }
+    public static final class DescriptorImpl extends OptionalJobPropertyDescriptor {
 
         /**
          * {@inheritDoc}
